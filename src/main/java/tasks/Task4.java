@@ -22,6 +22,13 @@ public class Task4 {
   }
 
   public List<ApiPersonDto> convert(List<Person> persons) {
-    return new ArrayList<>();
+    List<ApiPersonDto> result = new ArrayList<>(persons.size());
+    for (Person person : persons) {
+      result.add(personConverter.convert(person));
+    }
+    // не стал использовать stream, так как одна операция добавления, нет смысла использовать лишнее место
+    // время выполнения O(n) -> добавляем каждый элемент за O(1), без амортизации так как изначально задали размер списка
+    // по месту O(n) - список ApiPersonDto
+    return result;
   }
 }
