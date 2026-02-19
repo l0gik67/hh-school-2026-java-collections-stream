@@ -40,19 +40,10 @@ public class Task9 {
 
   // Тут фронтовая логика, делаем за них работу - склеиваем ФИО
   public String convertPersonToString(Person person) {
-    String result = "";
-    if (person.secondName() != null) {
-      result += person.secondName();
-    }
-
-    if (person.firstName() != null) {
-      result += " " + person.firstName();
-    }
-
-    if (person.secondName() != null) {
-      result += " " + person.secondName();
-    }
-    return result;
+    // соединил через stream, единственное не уверен на счет правильности порядка соединения
+    return Stream.of(person.firstName(), person.middleName(), person.secondName())
+            .filter(String::isBlank)
+            .collect(Collectors.joining(" "));
   }
 
   // словарь id персоны -> ее имя
