@@ -1,14 +1,8 @@
 package tasks;
 
 import common.Person;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -21,16 +15,27 @@ P.P.S Здесь ваши правки необходимо прокоммент
  */
 public class Task9 {
 
+  private static final int COUNT_OF_FAKE_PERSONS = 1; // сделал это в виде переменной
+  // чтобы в коде было понятно что мы скипаем, а не просто 1
+
+  private long count;
+  public long getCount() {
+    return count; // Добавил getter Для поля count
+    // в моем понимании это поле создано для того чтобы получать это значение
+    // не вызывая каждый раз метод подсчета
+    // поэтому решил его добавить
+    // если это не так, то нужно удалить вообще эту переменную
+  }
   // Костыль, эластик всегда выдает в топе "фальшивую персону".
   // Конвертируем начиная со второй
   public List<String> getNames(List<Person> persons) {
-    if (persons.isEmpty()) { // заменил на isEmpty чтобы выглядело более читабельно
-      return Collections.emptyList();
-    }
     // мне кажется не стоит удалять элемент из самого листа
     // я бы просто пропустил его
     // поэтому добавил команду skip
-    return persons.stream().skip(1).map(Person::firstName).collect(Collectors.toList());
+    // плюс когда используем skip можно не проверять коллекцию, он просто вернет пустой stream
+    // по хорошему здесь добавить Log что пропущен один элемент, на случай если в будущем пофиксят
+    // фальшивую персону
+    return persons.stream().skip(COUNT_OF_FAKE_PERSONS).map(Person::firstName).collect(Collectors.toList());
   }
 
   // Зачем-то нужны различные имена этих же персон (без учета фальшивой разумеется)
@@ -43,22 +48,17 @@ public class Task9 {
   public String convertPersonToString(Person person) {
     // соединил через stream, единственное не уверен на счет правильности порядка соединений полей
     return Stream.of(person.firstName(), person.middleName(), person.secondName())
-            .filter(String::isBlank)
+            .filter(String::isBlank) // проверка на null и строку состоящую из пробелов
             .collect(Collectors.joining(" "));
   }
 
   // словарь id персоны -> ее имя
   public Map<Integer, String> getPersonNames(Collection<Person> persons) {
-    Map<Integer, String> map = new HashMap<>(persons.size()); // тут поменял начальный размер мапы, странно делать его равным одному
-    // сделал сразу равным размеру persons, чтобы количество ячеек было = person и получение работало и если мапе и нужно будет расширяться
-    // То только 1 раз
-    for (Person person : persons) {
-      if (!map.containsKey(person.id())) {
-        map.put(person.id(), convertPersonToString(person)); // не хочется убирать эту проверку, чтобы под одного человека выделялась время и память на
-        // создание переменной фио
-      }
-    }
-    return map;
+    // проходить по коллекции через stream быстрее + нас просили имена, а не строковое представление
+    // плюс в мапу теперь не будет добавляться null значение, так как я его фильтрую
+    return persons.stream()
+            .filter(Objects::nonNull)
+            .collect(Collectors.toMap(Person::id, Person::firstName));
   }
 
   // есть ли совпадающие в двух коллекциях персоны?
@@ -69,7 +69,7 @@ public class Task9 {
     // не стал проверять какая из коллекций больше по размеру, так как в одной коллекции может быть 7 элементов
     // и все они одинаковые, а в другой 5 персон и все разные -> сет будет для второй коллекции больше
     for (Person person : persons2) {
-      if (persons1.contains(person)) {
+      if (personsSet1.contains(person)) {
         return true;
       }
     }
@@ -80,10 +80,13 @@ public class Task9 {
   public long countEven(Stream<Integer> numbers) {
     // Не совсем понятно можно ли мне закрывать поток, который мне передают в метод
     // насколько это правильное решение закрывать его
-    // Заменил метод forEach на count(), почитал про то что потоки не могут использовать переменные, которые находятся не в них
-    // и вообще не понятен смысл переменной count
-    return numbers.filter(num -> num % 2 == 0).count();
+    // Заменил метод forEach на count()
+    // не понятен смысл переменной count, видимо для какого то быстрого получения значения
+    // Но тогда хотелось бы создать под нее Getter
+    count = numbers.filter(num -> num % 2 == 0).count();
+    return count;
   }
+
 
   // Загадка - объясните почему assert тут всегда верен
   // Пояснение в чем соль - мы перетасовали числа, обернули в HashSet, а toString() у него вернул их в сортированном порядке

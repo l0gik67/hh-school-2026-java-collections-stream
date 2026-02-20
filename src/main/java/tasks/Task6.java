@@ -4,6 +4,8 @@ import common.Area;
 import common.Person;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /*
 Имеются
@@ -20,30 +22,35 @@ public class Task6 {
   public static Set<String> getPersonDescriptions(Collection<Person> persons,
                                                   Map<Integer, Set<Integer>> personAreaIds,
                                                   Collection<Area> areas) {
-    Map<Integer, Person> mapPersons  = new HashMap<>();
-    for (Person person : persons) {
-      mapPersons.put(person.id(), person); // добавляю в мапу всех person по id, чтобы потом можно было получить их
-      // за О(1), не использую поток, чтобы не тратить лишнюю память
-    }
+    Map<Integer, Person> mapPersons  = persons.stream()
+            .filter(Objects::nonNull)
+            .collect(Collectors.toMap(Person::id, Function.identity()));
+    // создаю за n - кол-во человек O(n) времени и места мапу для быстрого доступа к person
 
     // то же самое нужно сделать для регионов
-    Map<Integer, Area> mapAreas = new HashMap<>();
-    for (Area area : areas) {
-      mapAreas.put(area.getId(), area);
-    }
+    Map<Integer, Area> mapAreas = areas.stream()
+            .filter(Objects::nonNull)
+            .collect(Collectors.toMap(Area::getId, Function.identity()));
     // по месту пока получаем O(n+m) - количество персон + количество регионов
+    // по времени O(max(n, m)) или O(n+m) в целом не так важно
 
-    Set<String> result = new HashSet<>();
-    for (Map.Entry<Integer, Set<Integer>> entry : personAreaIds.entrySet()) {
-      String personName = mapPersons.get(entry.getKey()).firstName();
-      for (Integer areaId : entry.getValue()) {
-        String areaName = mapAreas.get(areaId).getName();
-        result.add(personName + " - " + areaName);
-      }
-    } // заполняем set через две мапы готовы сочетаниями строк
-    // по месту выйдет O(nm) если у каждого человека уникальное имя и присутсвуют все вакансии из списка
-    // по времени получим также в худшем случае O(nm) // если у каждого есть все m вакансий
+      // заполняем set через две мапы готовы сочетаниями строк
+    // по месту выйдет O(nm) если у каждого человека уникальное имя и присутсвуют все регионы из списка
+    // по времени получим также в худшем случае O(nm) // если у каждого есть все m регионов
 
-    return result;
+    return personAreaIds.entrySet().stream()
+            .filter(entryPersonAreas -> entryPersonAreas.getKey() != null)
+            .map(entryPersonAreas -> {
+              Person person = mapPersons.get(entryPersonAreas.getKey());
+              if (person == null || person.firstName() == null) return new HashSet<String>(); // не уверен что если у person нет имени нужно выводить с ним строки
+              // сделал так, что если имени нет, то и комбинаций с этим (пустым) именем тоже не будет
+              return entryPersonAreas.getValue().stream()
+                      .map(mapAreas::get)
+                      .filter(Objects::nonNull)
+                      .map(area -> person.firstName() + " - " + area.getName())
+                      .collect(Collectors.toSet());
+            })
+            .flatMap(Set::stream)
+            .collect(Collectors.toSet());
   }
 }

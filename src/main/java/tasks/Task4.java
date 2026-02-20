@@ -22,13 +22,11 @@ public class Task4 {
   }
 
   public List<ApiPersonDto> convert(List<Person> persons) {
-    List<ApiPersonDto> result = new ArrayList<>(persons.size());
-    for (Person person : persons) {
-      result.add(personConverter.convert(person));
-    }
-    // не стал использовать stream, так как одна операция добавления, нет смысла использовать лишнее место
-    // время выполнения O(n) -> добавляем каждый элемент за O(1), без амортизации так как изначально задали размер списка
-    // по месту O(n) - список ApiPersonDto
-    return result;
+    // n - кол-во элементов в persons -> время и место работы O(n)
+    // изначально сделал просто через for loop, так как реализуется просто операция добавления
+    // Но также как и с первой таской переключился на стримы, после подсказки из backend канала и погуглив
+    return persons.stream()
+            .map(personConverter::convert)
+            .toList();
   }
 }

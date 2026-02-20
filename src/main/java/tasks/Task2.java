@@ -23,12 +23,10 @@ public class Task2 {
     // по времени сортировка пройдет за nlgn -> и соберется в список за n
     // по месту получаем O(n) по времени наибольшее O(nlgn)
     // выбрал stream, потому что создавать список через циклы for займет много места (два обхода итераторами)
-
-    List<Person> result = Stream.of(persons1, persons2)
+    return Stream.of(persons1, persons2)
             .flatMap(Collection::stream)
             .sorted(Comparator.comparing(Person::createdAt))
             .limit(limit)
             .toList();
-    return result;
   }
 }

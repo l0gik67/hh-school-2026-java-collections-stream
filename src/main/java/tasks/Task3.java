@@ -11,26 +11,14 @@ import java.util.*;
 public class Task3 {
 
   public static List<Person> sort(Collection<Person> persons) {
-    List<Person> result = new ArrayList<>(persons);
-    result.sort(new SecondNameFirstNameCreatedAtComparator()); // создал компаратор класс по фамилии, имени, дате
-    // по времени сортировка займет O(nlgn) и создание списка O(n) -> общее время O(nlgn)
-    // по месту выделяем список O(n), (возможно еще сортировка занимает место не уверен, но оно не превышает O(n)
-    // в среднем O(lgn) -> общее место O(n)
-    return result;
-  }
-
-  private static class SecondNameFirstNameCreatedAtComparator implements Comparator<Person> {
-    @Override
-    public int compare(Person person1, Person person2) {
-      int compareSecondName = person1.secondName().compareTo(person2.secondName());
-      if (compareSecondName != 0) {
-        return compareSecondName;
-      }
-      int compareName = person1.firstName().compareTo(person2.firstName());
-      if (compareName != 0) {
-        return compareName;
-      }
-      return person1.createdAt().compareTo(person2.createdAt());
-    }
+    // Создание нового списка - по времени и месту O(n), n - количество person в начальной коллекции
+    // сортировка O(nlgn)
+    // общая сложность по времени O(nlgn), по месту O(n)
+    // Добавил дополнительное условие к каждому полю на null
+    return persons.stream()
+            .sorted(Comparator.comparing(Person::secondName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER))
+                    .thenComparing(Person::firstName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER))
+                    .thenComparing(Person::createdAt, Comparator.nullsLast(Comparator.naturalOrder())))
+            .toList();
   }
 }
