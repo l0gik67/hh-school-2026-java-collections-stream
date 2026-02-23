@@ -24,8 +24,7 @@ public class Task5 {
 
   public List<ApiPersonDto> convert(List<Person> persons, Map<Integer, Integer> personAreaIds) {
     List<ApiPersonDto> result = persons.stream()
-            .map(personConverter::convert)
-            .peek(person -> person.setAreaId(personAreaIds.get(getIntApiPersonDto(person))))
+            .map(person -> personConverter.convert(person, personAreaIds.get(person.id())))
             .toList();
 
     // по памяти O(n) на список и O(n) на stream -> в общем O(n)

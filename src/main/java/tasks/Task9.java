@@ -18,14 +18,6 @@ public class Task9 {
   private static final int COUNT_OF_FAKE_PERSONS = 1; // сделал это в виде переменной
   // чтобы в коде было понятно что мы скипаем, а не просто 1
 
-  private long count;
-  public long getCount() {
-    return count; // Добавил getter Для поля count
-    // в моем понимании это поле создано для того чтобы получать это значение
-    // не вызывая каждый раз метод подсчета
-    // поэтому решил его добавить
-    // если это не так, то нужно удалить вообще эту переменную
-  }
   // Костыль, эластик всегда выдает в топе "фальшивую персону".
   // Конвертируем начиная со второй
   public List<String> getNames(List<Person> persons) {
@@ -48,7 +40,8 @@ public class Task9 {
   public String convertPersonToString(Person person) {
     // соединил через stream, единственное не уверен на счет правильности порядка соединений полей
     return Stream.of(person.firstName(), person.middleName(), person.secondName())
-            .filter(String::isBlank) // проверка на null и строку состоящую из пробелов
+            .filter(Objects::nonNull)
+            .filter(string -> !string.isBlank())// проверка на null и строку состоящую из пробелов
             .collect(Collectors.joining(" "));
   }
 
@@ -58,7 +51,7 @@ public class Task9 {
     // плюс в мапу теперь не будет добавляться null значение, так как я его фильтрую
     return persons.stream()
             .filter(Objects::nonNull)
-            .collect(Collectors.toMap(Person::id, Person::firstName));
+            .collect(Collectors.toMap(Person::id, Person::firstName, (pers1, pers2) -> pers2));
   }
 
   // есть ли совпадающие в двух коллекциях персоны?
@@ -68,23 +61,13 @@ public class Task9 {
     // но увеличиваем затрачиваемое место получая O(n) n - количество элементов в первой коллекции
     // не стал проверять какая из коллекций больше по размеру, так как в одной коллекции может быть 7 элементов
     // и все они одинаковые, а в другой 5 персон и все разные -> сет будет для второй коллекции больше
-    for (Person person : persons2) {
-      if (personsSet1.contains(person)) {
-        return true;
-      }
-    }
-    return false;
+    return persons2.stream().anyMatch(personsSet1::contains);
   }
 
   // Посчитать число четных чисел
   public long countEven(Stream<Integer> numbers) {
-    // Не совсем понятно можно ли мне закрывать поток, который мне передают в метод
-    // насколько это правильное решение закрывать его
     // Заменил метод forEach на count()
-    // не понятен смысл переменной count, видимо для какого то быстрого получения значения
-    // Но тогда хотелось бы создать под нее Getter
-    count = numbers.filter(num -> num % 2 == 0).count();
-    return count;
+    return numbers.filter(num -> num % 2 == 0).count();
   }
 
 
