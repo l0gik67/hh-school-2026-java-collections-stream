@@ -22,6 +22,11 @@ public class Task4 {
   }
 
   public List<ApiPersonDto> convert(List<Person> persons) {
-    return new ArrayList<>();
+    // n - кол-во элементов в persons -> время и место работы O(n)
+    // изначально сделал просто через for loop, так как реализуется просто операция добавления
+    // Но также как и с первой таской переключился на стримы, после подсказки из backend канала и погуглив
+    return persons.stream()
+            .map(personConverter::convert)
+            .toList();
   }
 }
